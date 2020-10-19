@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 pygame.init()
 
 #Create the screen
-screen = pygame.display.set_mode((900, 600))
+scale = 600
+screen = pygame.display.set_mode((scale, scale))
 
 #Title, icon, text
 pygame.display.set_caption("Kalman Filter")
@@ -28,11 +29,6 @@ rx, ry = 0, 0
 image = pygame.Surface([700,700], pygame.SRCALPHA, 32)
 image = image.convert_alpha()
 
-X_p = []
-Y_p = []
-X_gt = []
-Y_gt = []
-
 #Parameters
 r = 0.1
 velocity = 0.1
@@ -42,12 +38,14 @@ ul = 1
 U = array([[1,1]]).T
 A = eye(2)
 Qx, Qy = 0.15, 0.15
-Q = diag([Qx, Qy])
+Qxy = Qx*Qy
+Q = array([[Qx, Qxy], [Qxy, Qy]])
 
 #Measurement parameters
 C = diag([1, 2])
 rx, ry = 0.05, 0.075
-R = diag([rx, ry])
+rxy = rx*ry
+R = array([[rx, rxy], [rxy, ry]])
 
 #Initial Conditions
 x0 = 0
@@ -108,8 +106,8 @@ while running:
     if i<81:
         X, P = kf_predict(X, P, A, Q, U)
 
-        rx = (X[0][0]*500)
-        ry = (X[1][0]*500)
+        rx = (X[0][0]*scale)
+        ry = (X[1][0]*scale)
         Px = (P[0][0])
         Py = (P[1][1])
 
@@ -119,13 +117,12 @@ while running:
             n = array([[n_x, n_y]]).T
             Z = dot(C, X) + R
             X, P, K, IM, IS = kf_correct(X, P, Z, C, R)
-            true_line[1] = (int(X[0][0]*500), int(X[1][0]*500))
+            true_line[1] = (int(X[0][0]*scale), int(X[1][0]*scale))
             pygame.draw.lines(screen, (0, 0, 255), False, true_line, 3)
             true_line[0] = true_line[1]
 
         screen.blit(robot, (int(rx), int(ry)))
-        #screen.blit(error, (rx + Px, ry + Py))
-        #pygame.draw.ellipse(screen, (0, 255, 0), (rx-(Py*250), ry-(Py*250), int(Px*500), int(Py*500)), 1)
+
         try:
             pygame.draw.ellipse(screen, (0, 255, 0), (int(rx-(Px*63)), int(ry-(Py*63)), int(Px*126), int(Py*126)), 2)
             # ellipse_r = pygame.transform.rotate(image, 45)
