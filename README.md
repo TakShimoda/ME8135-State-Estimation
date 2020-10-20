@@ -7,6 +7,8 @@ Link to youtube playlist:
 
 https://www.youtube.com/watch?v=wGZgDfA37xA&list=PLOxq1EUcxzrKmPDE9FOWAIaEXC9lrWu0h&ab_channel=GlennShimoda
 
+# Assignments Overview
+
 __HW1__: Basic Kalman Filter for a linear motion robot. Uses linear motion and observation models and the robot moves in a straight line diagonally.
 
 <img src="Images/Kalman_Filter.JPG" width="500">
