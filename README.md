@@ -7,6 +7,6 @@ Link to youtube playlist: https://www.youtube.com/watch?v=wGZgDfA37xA&list=PLOxq
 
 __HW1__: Basic Kalman Filter for a linear motion robot. Uses linear motion and observation models and the robot moves in a straight line diagonally.
 
-![](Images/Kalman_Filter.JPG)
+<img src="Images/Kalman_Filter.JPG" width="500">
 
 __HW2__: Extended Kalman Filter, using both the linear measurement model from HW1 and a new measurement model that uses distance and bearing between the robot and a landmark.
