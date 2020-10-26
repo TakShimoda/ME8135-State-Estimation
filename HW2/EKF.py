@@ -1,13 +1,14 @@
 import pygame
 import random, math
-from numpy import dot, sum, tile, linalg, array, random, eye, zeros, diag, transpose
+from numpy import dot, sum, tile, linalg, array, random, eye, zeros, diag, transpose, mean, var, cov
 from numpy.linalg import inv, norm
 import matplotlib.pyplot as plt
 
-#Noise control:
+#Basic Options
 Noise = True
 Linear = False
 Ellipse = False
+Fill = True
 
 #Initialize the pygame
 pygame.init()
@@ -16,12 +17,12 @@ pygame.init()
 scale = 600
 screen = pygame.display.set_mode((scale, scale))
 sc_f = int(scale/20)
-cov_size = 500
+cov_size = 20000
 cov_scale = cov_size/sc_f
 
 #Title, icon, text
 pygame.display.set_caption("Kalman Filter")
-font = pygame.font.Font('freesansbold.ttf', 32)
+font = pygame.font.Font('freesansbold.ttf', 20)# 32)
 X_text = font.render("X:", True, (255, 255, 255))
 Y_text = font.render("Y:", True, (255, 255, 255))
 if Linear == True:
@@ -44,15 +45,10 @@ L = array([[10, 10]]).T
 image = pygame.Surface([scale,scale], pygame.SRCALPHA, 32)
 image = image.convert_alpha()
 
-X_p = []
-Y_p = []
-X_gt = []
-Y_gt = []
-
 #Initial Conditions
 x0 = 6.0
 y0 = 10.0
-theta = math.pi/2.0 
+theta = math.pi/2.0
 thetaprev = 0
 X = array([[x0, y0]]).T
 P = zeros(2)
@@ -70,24 +66,22 @@ u_w = (ur+ul)/2.0
 u_phi = (ur-ul)*(r/rL)
 U = array([[r*u_w*math.cos(theta),r*u_w*math.sin(theta)]]).T
 
-#Noise
+#Process Noise
 ww = 0.1
 wphi = 0.01
 Q = diag([ww+wphi, ww+wphi])
 delf_delw = ww* array([T, T])
-delf_delphi = (T**2)*wphi* array([-r*u_w*math.sin(theta), r*u_w*math.cos(theta)])
-Q_p = transpose(array([delf_delw, delf_delphi]))
-
+delf_delphi = (T**2)*wphi*r*u_w* array([-math.sin(theta), math.cos(theta)])
+w_kp = transpose(array([delf_delw, delf_delphi]))
+Q_p = cov(w_kp, bias=True)
 
 #Measurement parameters
 C = diag([1, 2])
 rx, ry = 0.05, 0.075
-R = diag([rx, ry])
+rxy = rx*ry
+R = array([[rx, rxy], [rxy, ry]])
 phi = theta + math.pi/2.0
 dist_norm = 4.0
-delg_delw = ww* array([math.cos(phi), math.sin(phi)])
-delg_delphi = dist_norm* array([-math.sin(phi), math.cos(phi)])
-R_p = transpose(array([delg_delw, delg_delphi]))
 
 #True line
 true_line = [(x0*sc_f, y0*sc_f), (x0, y0)]
@@ -119,7 +113,6 @@ def kf_correct_bm(X, P, Y, G, R_p, IM):
     IS = R_p + dot(G, dot(P, G.T))
     det = IS[0,0]*IS[1,1] - IS[0,1]*IS[1,0]
     #try to clip outliers
-    #print('%2.4f' %(det))
     inverse = inv(IS)
     if abs(det) < 0.1:
         inverse = (abs(det)/2)*inv(IS)
@@ -147,15 +140,14 @@ screen.fill((0, 0, 0))
 screen.blit(Landmark, (int(scale/2), int(scale/2)))
 R_text = font.render("Radius of circle: 4m", True, (255, 255, 255))
 Q_text = font.render("HW2 Part " + str(part), True, (255, 255, 255))
-C_text = font.render("Covariance Ellipse Scale: " + str(cov_scale), True, (255, 255, 255))
+C_text = font.render("Covariance Ellipse Scale: " + '{:01.2f}'.format(cov_scale), True, (255, 255, 255))
+B_text = font.render("Bearing: 90", True, (255, 255, 255))
 screen.blit(R_text, (textX, textY))
-screen.blit(Q_text, (textX, textY+30))
-if Ellipse == True:
-    screen.blit(C_text, (textX, textY+60))
+screen.blit(Q_text, (textX, textY+20))
+screen.blit(B_text, (textX, textY+60))
 
 while running:
-    i += 1     
-    #screen.fill((0, 0, 0))
+    i += 1 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -169,7 +161,8 @@ while running:
     U = array([[r*u_w*math.cos(theta),r*u_w*math.sin(theta)]]).T
 
     delf_delphi = (T**2)*wphi* array([-r*u_w*math.sin(theta_no_noise), r*u_w*math.cos(theta_no_noise)])
-    Q_p = transpose(array([delf_delw, delf_delphi]))
+    w_kp = transpose(array([delf_delw, delf_delphi]))
+    Q_p = cov(w_kp, bias=True)
 
     X, P = kf_predict(X, P, F, Q_p, U)
 
@@ -195,16 +188,17 @@ while running:
             #print('Before %2.2f %2.2f %2.2f \n' %(X[0, 0], X[1, 0], dist_norm))
 
             #Update covariance matrix R
-            delg_delw = ww* array([math.cos(phi), math.sin(phi)])
-            delg_delphi = dist_norm* array([-math.sin(phi), math.cos(phi)])
-            R_p = transpose(array([delg_delw, delg_delphi]))
+            delg_delw = n_w* array([math.cos(phi), math.sin(phi)])
+            delg_delphi = dist_norm*n_phi* array([-math.sin(phi), math.cos(phi)])
+            n_kp = transpose(array([delg_delw, delg_delphi]))
+            R_p = cov(n_kp, bias=True)
 
             Z = range_bearing(dist_norm_n, phi_n)
             IM = range_bearing(dist_norm, phi)
             G1 = array([(X[0, 0] - 10.0)*math.cos(phi), (X[1,0] - 10.0)*math.cos(phi)])
             G2 = array([(X[0, 0] - 10.0)*math.sin(phi), (X[1,0] - 10.0)*math.sin(phi)])
             G = (1.0/dist_norm)*array([G1, G2])
-            G = G.reshape(2, 2)
+            #G = G.reshape(2, 2)
             X, P, K, IM, IS = kf_correct_bm(X, P, Z, G, R_p, IM)
             true_line[1] = (int(X[0, 0]*sc_f), int(X[1, 0]*sc_f))
             pygame.draw.lines(screen, (0, 0, 255), False, true_line, 3)
@@ -220,18 +214,34 @@ while running:
     dist = dist[:,0]
     dist_norm = norm(dist, ord = 2)
 
-    print('Angle %2.2f Norm: %2.2f X: %2.2f Y: %2.2f' %(theta*180.0/math.pi, dist_norm, X[0][0], X[1][0]))
+    #print('Angle %2.2f Norm: %2.2f X: %2.2f Y: %2.2f' %(theta*180.0/math.pi, dist_norm, X[0][0], X[1][0]))
     
     if theta < - 0:
         theta = math.pi*2.0
 
     screen.blit(robot, (int(Xx), int(Xy)))
+
     if Ellipse == True:
         try:
-            pygame.draw.ellipse(screen, (0, 255, 0), (int(Xx-(Px*30)), int(Xy-(Py*30)), int(Px*cov_size), int(Py*cov_size)), 1)
+            pygame.draw.ellipse(screen, (0, 255, 0), (int(Xx-(Px*cov_size/2)), int(Xy-(Py*cov_size/2)), int(Px*cov_size), int(Py*cov_size)), 1)
             # ellipse_r = pygame.transform.rotate(image, 45)
             # screen.blit(ellipse_r, (int(rx), int(ry)))
         except:
             print('CovX %2.4f CovY %2.4f' %(Px, Py))
+
+    n_phi = random.normal(0, wphi)
+    Bearing = (theta + math.pi/2.0 + n_phi)*180.0/math.pi
+    if (theta*180.0/math.pi) > 270:
+        Bearing = Bearing - 360
+    Bearing_print = '{:03.2f}'.format(Bearing)
+    N_print = '{:01.2f}'.format(dist_norm)
+    N_text = font.render("Norm: " + N_print, True, (255, 255, 255))
+    B_text = font.render("Bearing: " + Bearing_print, True, (255, 255, 255))
+    screen.fill((0, 0, 0), (0, scale//12, scale, scale//6))
+    screen.blit(Landmark, (int(scale/2), int(scale/2)))
+    screen.blit(N_text, (textX, textY+40))
+    screen.blit(B_text, (textX, textY+60))
+    if Ellipse is True:
+        screen.blit(C_text, (textX, textY+80))
 
     pygame.display.update()
