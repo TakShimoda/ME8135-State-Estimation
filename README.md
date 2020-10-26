@@ -5,7 +5,7 @@ Reference: *State Estimation for Robotics (2020)* by Timothy D. Barfoot.
 
 Link to youtube playlist: 
 
-https://www.youtube.com/watch?v=wGZgDfA37xA&list=PLOxq1EUcxzrKmPDE9FOWAIaEXC9lrWu0h&ab_channel=GlennShimoda
+https://www.youtube.com/watch?v=jsQ5yIhPXb4&list=PLOxq1EUcxzrKmPDE9FOWAIaEXC9lrWu0h&ab_channel=GlennShimoda
 
 # Implement Code
 
