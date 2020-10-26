@@ -7,6 +7,26 @@ Link to youtube playlist:
 
 https://www.youtube.com/watch?v=wGZgDfA37xA&list=PLOxq1EUcxzrKmPDE9FOWAIaEXC9lrWu0h&ab_channel=GlennShimoda
 
+# Implement Code
+
+Clone the repository:
+
+`git clone https://github.com/TakShimoda/ME8135-State-Estimation.git`
+
+Create a virtual environment:
+
+`pip install virtualenv`
+
+`cd ME8135-State-Estimation`
+
+`virtualenv ME8135`
+
+`ME8135\Scripts\activate`
+
+Activate the dependencies:
+
+`install -r requirements.txt`
+
 # Assignments Overview
 
 __HW1__: Basic Kalman Filter for a linear motion robot. Uses linear motion and observation models and the robot moves in a straight line diagonally.
