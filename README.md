@@ -11,21 +11,33 @@ https://www.youtube.com/watch?v=wGZgDfA37xA&list=PLOxq1EUcxzrKmPDE9FOWAIaEXC9lrW
 
 Clone the repository:
 
-`git clone https://github.com/TakShimoda/ME8135-State-Estimation.git`
+```bash
+git clone https://github.com/TakShimoda/ME8135-State-Estimation.git
+```
 
 Create a virtual environment:
 
-`pip install virtualenv`
+```bash
+pip install virtualenv
+```
 
-`cd ME8135-State-Estimation`
+```bash
+cd ME8135-State-Estimation
+```
 
-`virtualenv ME8135`
+```bash
+virtualenv ME8135
+```
 
-`ME8135\Scripts\activate`
+```bash
+ME8135\Scripts\activate
+```
 
 Activate the dependencies:
 
-`install -r requirements.txt`
+```bash
+install -r requirements.txt
+```
 
 # Assignments Overview
 
