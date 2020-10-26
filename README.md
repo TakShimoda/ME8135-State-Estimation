@@ -33,7 +33,7 @@ virtualenv ME8135
 ME8135\Scripts\activate
 ```
 
-Activate the dependencies:
+Install the dependencies:
 
 ```bash
 install -r requirements.txt
