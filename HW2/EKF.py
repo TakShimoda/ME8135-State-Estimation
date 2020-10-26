@@ -7,8 +7,7 @@ import matplotlib.pyplot as plt
 #Basic Options
 Noise = True
 Linear = False
-Ellipse = False
-Fill = True
+Ellipse = True
 
 #Initialize the pygame
 pygame.init()
@@ -17,7 +16,7 @@ pygame.init()
 scale = 600
 screen = pygame.display.set_mode((scale, scale))
 sc_f = int(scale/20)
-cov_size = 20000
+cov_size = 2000
 cov_scale = cov_size/sc_f
 
 #Title, icon, text
@@ -221,6 +220,7 @@ while running:
 
     screen.blit(robot, (int(Xx), int(Xy)))
 
+    print('CovX %2.4f CovY %2.4f' %(Px, Py))
     if Ellipse == True:
         try:
             pygame.draw.ellipse(screen, (0, 255, 0), (int(Xx-(Px*cov_size/2)), int(Xy-(Py*cov_size/2)), int(Px*cov_size), int(Py*cov_size)), 1)
