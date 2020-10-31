@@ -23,7 +23,6 @@ robot = pygame.Surface((5, 5))
 robot.fill((255, 0, 0))
 error = pygame.Surface((5, 5))
 error.fill((255, 0, 0))
-rx, ry = 0, 0
 
 #Covariance ellipse
 image = pygame.Surface([700,700], pygame.SRCALPHA, 32)
@@ -38,14 +37,12 @@ ul = 1
 U = array([[1,1]]).T
 A = eye(2)
 Qx, Qy = 0.15, 0.15
-Qxy = Qx*Qy
-Q = array([[Qx, Qxy], [Qxy, Qy]])
+Q = diag((Qx, Qy))
 
 #Measurement parameters
 C = diag([1, 2])
 rx, ry = 0.05, 0.075
-rxy = rx*ry
-R = array([[rx, rxy], [rxy, ry]])
+R = diag((rx, ry))
 
 #Initial Conditions
 x0 = 0
