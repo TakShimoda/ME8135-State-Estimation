@@ -16,12 +16,12 @@ pygame.init()
 scale = 600
 screen = pygame.display.set_mode((scale, scale))
 sc_f = int(scale/20)
-cov_size = 2000
+cov_size = 20
 cov_scale = cov_size/sc_f
 
 #Title, icon, text
 pygame.display.set_caption("Kalman Filter")
-font = pygame.font.Font('freesansbold.ttf', 20)# 32)
+font = pygame.font.Font('freesansbold.ttf', 20)
 X_text = font.render("X:", True, (255, 255, 255))
 Y_text = font.render("Y:", True, (255, 255, 255))
 if Linear == True:
@@ -69,16 +69,15 @@ U = array([[r*u_w*math.cos(theta),r*u_w*math.sin(theta)]]).T
 ww = 0.1
 wphi = 0.01
 Q = diag([ww+wphi, ww+wphi])
-delf_delw = ww* array([T, T])
-delf_delphi = (T**2)*wphi*r*u_w* array([-math.sin(theta), math.cos(theta)])
-w_kp = transpose(array([delf_delw, delf_delphi]))
-Q_p = cov(w_kp, bias=True)
+delf_delw = array([T, T])
+delf_delphi = (T**2)*r*u_w* array([-math.sin(theta), math.cos(theta)])
+w_k = array([ww*delf_delw[0]+wphi*delf_delphi[0], ww*delf_delw[1]+wphi*delf_delphi[1]])
+Q_p = diag([w_k[0], w_k[1]])
 
 #Measurement parameters
 C = diag([1, 2])
 rx, ry = 0.05, 0.075
-rxy = rx*ry
-R = array([[rx, rxy], [rxy, ry]])
+R = diag([rx, ry])
 phi = theta + math.pi/2.0
 dist_norm = 4.0
 
@@ -159,9 +158,9 @@ while running:
     theta_no_noise = (T*(r/rL)*u_phi) + theta
     U = array([[r*u_w*math.cos(theta),r*u_w*math.sin(theta)]]).T
 
-    delf_delphi = (T**2)*wphi* array([-r*u_w*math.sin(theta_no_noise), r*u_w*math.cos(theta_no_noise)])
-    w_kp = transpose(array([delf_delw, delf_delphi]))
-    Q_p = cov(w_kp, bias=True)
+    delf_delphi = (T**2)* array([-r*u_w*math.sin(theta_no_noise), r*u_w*math.cos(theta_no_noise)])
+    w_k = array([ww*delf_delw[0]+wphi*delf_delphi[0], ww*delf_delw[1]+wphi*delf_delphi[1]])
+    Q_p = diag([w_k[0], w_k[1]])
 
     X, P = kf_predict(X, P, F, Q_p, U)
 
@@ -187,10 +186,13 @@ while running:
             #print('Before %2.2f %2.2f %2.2f \n' %(X[0, 0], X[1, 0], dist_norm))
 
             #Update covariance matrix R
-            delg_delw = n_w* array([math.cos(phi), math.sin(phi)])
-            delg_delphi = dist_norm*n_phi* array([-math.sin(phi), math.cos(phi)])
-            n_kp = transpose(array([delg_delw, delg_delphi]))
-            R_p = cov(n_kp, bias=True)
+            delg_delw = array([math.cos(phi), math.sin(phi)])
+            delg_delphi = dist_norm* array([-math.sin(phi), math.cos(phi)])
+            #n_kp = transpose(array([delg_delw, delg_delphi]))
+            #R_p = cov(n_kp, bias=True)
+
+            n_k = array([ww*delg_delw[0]+wphi*delg_delphi[0], ww*delg_delw[1]+wphi*delg_delphi[1]])
+            R_p = diag([n_k[0], n_k[1]])
 
             Z = range_bearing(dist_norm_n, phi_n)
             IM = range_bearing(dist_norm, phi)
