@@ -20,7 +20,7 @@ cov_size = 20
 cov_scale = cov_size/sc_f
 
 #Title, icon, text
-pygame.display.set_caption("Kalman Filter")
+pygame.display.set_caption("Particle Filter")
 font = pygame.font.Font('freesansbold.ttf', 20)
 X_text = font.render("X:", True, (255, 255, 255))
 Y_text = font.render("Y:", True, (255, 255, 255))
@@ -43,6 +43,8 @@ L = array([[10, 10]]).T
 #Covariance ellipse
 image = pygame.Surface([scale,scale], pygame.SRCALPHA, 32)
 image = image.convert_alpha()
+
+#---------------------------------------------------------------ROBOT PARAMETERS-------------------------------------------------------------------
 
 #Initial Conditions
 M = 10  #number of samples
@@ -70,12 +72,12 @@ U = array([[r*u_w*math.cos(theta),r*u_w*math.sin(theta)]]).T
 ww = 0.1
 wphi = 0.01
 Q = diag([ww+wphi, ww+wphi])
-delf_delw = array([T, T])
-delf_delphi = (T**2)*r*u_w* array([-math.sin(theta), math.cos(theta)])
-w_k = array([ww*delf_delw[0]+wphi*delf_delphi[0], ww*delf_delw[1]+wphi*delf_delphi[1]])
-Q_p = diag([w_k[0], w_k[1]])
+# delf_delw = array([T, T])
+# delf_delphi = (T**2)*r*u_w* array([-math.sin(theta), math.cos(theta)])
+# w_k = array([ww*delf_delw[0]+wphi*delf_delphi[0], ww*delf_delw[1]+wphi*delf_delphi[1]])
+# Q_p = diag([w_k[0], w_k[1]])
 
-#Measurement parameters
+#Linear measurement parameters
 C = diag([1, 2])
 rx, ry = 0.05, 0.075
 R = diag([rx, ry])
@@ -84,6 +86,35 @@ dist_norm = 4.0
 
 #True line
 true_line = [(x0*sc_f, y0*sc_f), (x0, y0)]
+
+def sample(theta):
+    samples = []
+    theta_prev = theta
+    for i in range(len(M)):
+        theta_noise = random.normal(0, wphi)
+        theta_dot = (r/rL)*u_phi + theta_noise
+        theta = (T*theta_dot) + theta_prev
+        U = array([[r*u_w*math.cos(theta),r*u_w*math.sin(theta)]]).T
+
+        noise_x = random.normal(0, ww)
+        noise_y = random.normal(0, ww)
+        noise = array([[noise_x, noise_y]]).T
+        X_dot = U + noise
+        X = dot(F, X) + (T*X_dot)
+
+        samples.append(X)
+    return samples
+
+def resample(pred):
+    correct_samples = []
+    for i in range(len(M)):
+        if Linear == True:
+            n_x = random.normal(0, rx)
+            n_y = random.normal(0, ry)
+            n = array([n_x, n_y]).T
+            Z = dot(C, pred[i]) + n
+            correct_samples.append(Z)
+    return correct_samples
 
 def update_text(X, Y, coord):
     X_text = font.render("X:" + str(coord), True, (255, 255, 255))
@@ -132,15 +163,7 @@ while running:
 
     pygame.time.wait(125)
 
-        theta_noise = random.normal(0, wphi)
-    theta_dot = (r/rL)*u_phi + theta_noise
-    theta = (T*theta_dot) + theta
-    theta_no_noise = (T*(r/rL)*u_phi) + theta
-    U = array([[r*u_w*math.cos(theta),r*u_w*math.sin(theta)]]).T
-
-    delf_delphi = (T**2)* array([-r*u_w*math.sin(theta_no_noise), r*u_w*math.cos(theta_no_noise)])
-    w_k = array([ww*delf_delw[0]+wphi*delf_delphi[0], ww*delf_delw[1]+wphi*delf_delphi[1]])
-    Q_p = diag([w_k[0], w_k[1]])
+    predict_samples = sample(theta)    
 
     X, P = kf_predict(X, P, F, Q_p, U)
 
@@ -150,6 +173,7 @@ while running:
             n_y = random.normal(0, ry)
             n = diag([n_x, n_y])
             Z = dot(C, X) + n
+
             X, P, K, IM, IS = kf_correct(X, P, Z, C, R)
             true_line[1] = (int(X[0][0]*sc_f), int(X[1][0]*sc_f))
             pygame.draw.lines(screen, (0, 0, 255), False, true_line, 3)
@@ -163,13 +187,10 @@ while running:
             dist_norm_n = dist_norm + n_w
             phi = theta + math.pi/2.0
             phi_n = phi + n_phi
-            #print('Before %2.2f %2.2f %2.2f \n' %(X[0, 0], X[1, 0], dist_norm))
 
             #Update covariance matrix R
             delg_delw = array([math.cos(phi), math.sin(phi)])
             delg_delphi = dist_norm* array([-math.sin(phi), math.cos(phi)])
-            #n_kp = transpose(array([delg_delw, delg_delphi]))
-            #R_p = cov(n_kp, bias=True)
 
             n_k = array([ww*delg_delw[0]+wphi*delg_delphi[0], ww*delg_delw[1]+wphi*delg_delphi[1]])
             R_p = diag([n_k[0], n_k[1]])
@@ -180,6 +201,7 @@ while running:
             G2 = array([(X[0, 0] - 10.0)*math.sin(phi), (X[1,0] - 10.0)*math.sin(phi)])
             G = (1.0/dist_norm)*array([G1, G2])
             #G = G.reshape(2, 2)
+
             X, P, K, IM, IS = kf_correct_bm(X, P, Z, G, R_p, IM)
             true_line[1] = (int(X[0, 0]*sc_f), int(X[1, 0]*sc_f))
             pygame.draw.lines(screen, (0, 0, 255), False, true_line, 3)
