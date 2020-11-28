@@ -66,3 +66,11 @@ alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
 alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
 
 __HW3__: Particle Filter, using the same same set up from HW2 (linear measurement model and bearing between robot and a landmark)
+
+<img src="Images/PF_Initial.JPG" width="500">
+
+Initial particles in blue. Red is the ground truth(robot motion with no noise)
+
+<img src="Images/PF_Converged.JPG" width="500">
+
+After particles converged.
