@@ -287,8 +287,6 @@ while running:
 
     X = array([[avgx, avgy]]).T
 
-    print(avgx, avgy, theta*180/(math.pi))
-
     if theta < 0:
         theta = math.pi*2.0
 
@@ -303,9 +301,6 @@ while running:
     pygame.draw.lines(screen, (0, 0, 255), False, true_line, 3)
     true_line[0] = true_line[1]
 
-    # Px = (P[0][0])
-    # Py = (P[1][1])
-
     dist = X - L
     dist = dist[:,0]
     dist_norm = norm(dist, ord = 2)
@@ -313,15 +308,6 @@ while running:
     # #print('Angle %2.2f Norm: %2.2f X: %2.2f Y: %2.2f' %(theta*180.0/math.pi, dist_norm, X[0][0], X[1][0]))
 
     screen.blit(robot, (int(avgx*sc_f), int(avgy*sc_f)))
-
-    # #print('CovX %2.4f CovY %2.4f' %(Px, Py))
-    # if Ellipse == True:
-    #     try:
-    #         pygame.draw.ellipse(screen, (0, 255, 0), (int(Xx-(Px*cov_size/2)), int(Xy-(Py*cov_size/2)), int(Px*cov_size), int(Py*cov_size)), 1)
-    #         # ellipse_r = pygame.transform.rotate(image, 45)
-    #         # screen.blit(ellipse_r, (int(rx), int(ry)))
-    #     except:
-    #         print('CovX %2.4f CovY %2.4f' %(Px, Py))
 
     n_phi = random.normal(0, wphi)
     Bearing = (theta + math.pi/2.0 + n_phi)*180.0/math.pi
