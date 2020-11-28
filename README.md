@@ -78,9 +78,7 @@ After particles converged.
 YouTube Links for simulations with linear and nonlinear measurements:
 
 <a href="https://www.youtube.com/watch?v=ZaF_GBYmXps&list=PLOxq1EUcxzrKmPDE9FOWAIaEXC9lrWu0h&index=6&ab_channel=GlennShimoda
-" target="_blank"><img src="Images/PF_Converged.JPG" 
-alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+" target="_blank">Part 1: Linear Measurements</a>
 
 <a href="https://www.youtube.com/watch?v=MFTPh9TmVWc&list=PLOxq1EUcxzrKmPDE9FOWAIaEXC9lrWu0h&index=7&ab_channel=GlennShimoda
-" target="_blank"><" 
-alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+" target="_blank">Part 2: Nonlinear Measurements</a>
