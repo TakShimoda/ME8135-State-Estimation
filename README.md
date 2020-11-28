@@ -64,3 +64,5 @@ alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
 <a href="https://www.youtube.com/watch?v=uFtIHzXpDYc&list=PLOxq1EUcxzrKmPDE9FOWAIaEXC9lrWu0h&index=5&ab_channel=GlennShimoda
 " target="_blank"><img src="Images/EKF_b_ellipse.JPG" 
 alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+
+__HW3__: Particle Filter, using the same same set up from HW2 (linear measurement model and bearing between robot and a landmark)
