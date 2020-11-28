@@ -7,7 +7,7 @@ import itertools as it
 
 #Basic Options
 Noise = True
-Linear = True
+Linear = False
 Ellipse = False
 
 #Initialize the pygame
@@ -33,8 +33,12 @@ textX = 10
 textY = 10
 
 #Load robot
-robot = pygame.Surface((3, 3))
+robot = pygame.Surface((5, 5))
 robot.fill((255, 0, 0))
+
+#Particle
+particle = pygame.Surface((2, 2))
+particle.fill((0, 0, 255))
 
 #Landmark
 Landmark = pygame.Surface((10, 10))
@@ -86,7 +90,7 @@ dist_norm = 4.0
 true_line = [(x0*sc_f, y0*sc_f), (x0, y0)]
 
 def sample(X_prev, U):
-    samples = []
+    #samples = []
     for i in range(M):
         X = X_prev
         noise_x = random.normal(0, ww)
@@ -94,8 +98,9 @@ def sample(X_prev, U):
         noise = array([[noise_x, noise_y]]).T
         X_dot = (U + noise).reshape(2,)
         X = dot(F, X).reshape(2,) + (T*X_dot)#Xk equation 2 from HW2
-        samples.append(X.reshape(2,))  
-    return samples
+        #samples.append(X.reshape(2,))  
+    #return samples
+    return X
 
 def create_bins(x_dist, y_dist):
     X_max = max(x_dist)
@@ -162,7 +167,6 @@ def probability(x_p, y_p, p_dist, delta, *max_min):
 def correct(pred):
     correct_samples = []
     for i in range(M):
-        #Predict the no-noise model
         if Linear is True:
             n_x = random.normal(0, rx)
             n_y = random.normal(0, ry)
@@ -240,14 +244,40 @@ screen.blit(R_text, (textX, textY))
 screen.blit(Q_text, (textX, textY+20))
 screen.blit(B_text, (textX, textY+60))
 
+#Initial guess of 100
+posterior = []
+predict_samples = []
+for i in range(M):
+    x_rand = random.normal(x0, 3)
+    y_rand = random.normal(y0, 3)
+    posterior.append((x_rand, y_rand))
+theta_list = []
+theta_prev = [theta]*M
+theta_prev_n = theta
+X_n = X
+
 while running:
 
-    theta_noise = random.normal(0, wphi)
-    theta_dot = (r/rL)*u_phi + theta_noise
-    theta = (T*theta_dot) + theta
-    U = array([[r*u_w*math.cos(theta),r*u_w*math.sin(theta)]]).T
+    screen.fill((0, 0, 0), (0, scale//6, scale, scale))
 
-    predict_samples = sample(X, U)
+    for i, x in enumerate(posterior):
+        theta_noise = random.normal(0, wphi)
+        theta_dot = (r/rL)*u_phi + theta_noise
+        theta = (T*theta_dot) + theta_prev[i]
+        U = array([[r*u_w*math.cos(theta),r*u_w*math.sin(theta)]]).T
+        theta_list.append(theta)
+        predict_samples.append(sample(x, U))
+
+    #no noise(ground truth)
+    theta_dot_n = (r/rL)*u_phi
+    theta_n = (T*theta_dot_n) + theta_prev_n
+    U_n = array([r*u_w*math.cos(theta_n),r*u_w*math.sin(theta_n)]).T
+    X_n = X_n.reshape(2,) + (T*U_n)#Xk equation 2 from HW2
+    theta_prev_n = theta_n
+
+    #theta should also be a sample
+    theta_prev = theta_list
+    theta_list = []
 
     x_pred = [x[0] for x in predict_samples]
     y_pred = [y[1] for y in predict_samples]
@@ -290,24 +320,27 @@ while running:
     if theta < 0:
         theta = math.pi*2.0
 
+    predict_samples = []
     # i += 1 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    pygame.time.wait(125)
+    #pygame.time.wait(125)
     
-    true_line[1] = (int(avgx*sc_f), int(avgy*sc_f))
-    pygame.draw.lines(screen, (0, 0, 255), False, true_line, 3)
-    true_line[0] = true_line[1]
+    # true_line[1] = (int(avgx*sc_f), int(avgy*sc_f))
+    # pygame.draw.lines(screen, (0, 0, 255), False, true_line, 3)
+    # true_line[0] = true_line[1]
 
     dist = X - L
     dist = dist[:,0]
     dist_norm = norm(dist, ord = 2)
 
     # #print('Angle %2.2f Norm: %2.2f X: %2.2f Y: %2.2f' %(theta*180.0/math.pi, dist_norm, X[0][0], X[1][0]))
-
-    screen.blit(robot, (int(avgx*sc_f), int(avgy*sc_f)))
+    for i in range(M):
+        screen.blit(particle, (int(posterior[i][0]*sc_f), int(posterior[i][1]*sc_f)))
+    
+    screen.blit(robot, (int(X_n[0]*sc_f), int(X_n[1]*sc_f)))
 
     n_phi = random.normal(0, wphi)
     Bearing = (theta + math.pi/2.0 + n_phi)*180.0/math.pi
