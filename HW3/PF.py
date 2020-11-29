@@ -7,7 +7,7 @@ import itertools as it
 
 #Basic Options
 Noise = True
-Linear = False
+Linear = True
 Ellipse = False
 
 #Initialize the pygame
@@ -33,11 +33,11 @@ textX = 10
 textY = 10
 
 #Load robot
-robot = pygame.Surface((5, 5))
+robot = pygame.Surface((10, 10))
 robot.fill((255, 0, 0))
 
 #Particle
-particle = pygame.Surface((2, 2))
+particle = pygame.Surface((3, 3))
 particle.fill((0, 0, 255))
 
 #Landmark
